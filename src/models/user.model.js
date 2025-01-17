@@ -22,6 +22,10 @@ const UserSchema = new mongoose.Schema(
     verificationCodeExpiry: {
       type: Date,
     },
+    usedStorage: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     versionKey: false,

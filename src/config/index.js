@@ -5,6 +5,7 @@ const config = {
   email_from: process.env.EMAIL_FROM,
   email_password: process.env.EMAIL_PASSWORD,
   email_authorization: process.env.AUTHORIZATION,
+  max_storage: Number(process.env.MAX_STORAGE_PER_USER),
 };
 
 module.exports = { config };
