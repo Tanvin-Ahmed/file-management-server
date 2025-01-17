@@ -5,18 +5,18 @@ const { config } = require("../config");
 // Multer storage configuration using GridFS
 const storage = new GridFsStorage({
   url: config.db_uri,
-  // file: (req, file) => {
-  //   return new Promise((resolve, reject) => {
-  //     if (!file.originalname) return reject(new Error("Upload failed"));
+  file: (req, file) => {
+    return new Promise((resolve, reject) => {
+      if (!file.originalname) return reject(new Error("Upload failed"));
 
-  //     const fileName = file.originalname;
-  //     const fileInfo = {
-  //       bucketName: "uploads", // Name of the bucket in MongoDB
-  //       filename: fileName,
-  //     };
-  //     resolve(fileInfo);
-  //   });
-  // },
+      const fileName = file.originalname;
+      const fileInfo = {
+        bucketName: "uploads", // Name of the bucket in MongoDB
+        filename: fileName,
+      };
+      resolve(fileInfo);
+    });
+  },
 });
 
 // File filter (only allow images, PDFs, and docs)

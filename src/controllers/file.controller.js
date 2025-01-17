@@ -3,6 +3,7 @@ const {
   findFile,
   findFolder,
   updateFolder,
+  fileDelete,
 } = require("../services/files.service");
 const { getUserById, updateUser } = require("../services/user.service");
 
@@ -97,4 +98,32 @@ const uploadMultipleFiles = async (req, res) => {
   }
 };
 
-module.exports = { uploadMultipleFiles };
+const deleteFile = async (req, res) => {
+  try {
+    const { fileId } = req.params; // Assuming the file ID is passed as a route parameter
+    const user = req.user;
+
+    if (!fileId) {
+      return res.status(400).json({ message: "File ID is required." });
+    }
+
+    // Check if the file exists in the database
+    const file = await findFile({ _id: fileId, createdBy: user._id });
+
+    if (!file) {
+      return res.status(404).json({ message: "File not found." });
+    }
+
+    const deletedFile = await fileDelete(file, res);
+
+    return res
+      .status(200)
+      .json({ message: "File deleted successfully.", data: deletedFile });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "File not deleted.", error: error.message });
+  }
+};
+
+module.exports = { uploadMultipleFiles, deleteFile };
