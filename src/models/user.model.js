@@ -16,6 +16,12 @@ const UserSchema = new mongoose.Schema(
     imageId: {
       type: String,
     },
+    verificationCode: {
+      type: String,
+    },
+    verificationCodeExpiry: {
+      type: Date,
+    },
   },
   {
     versionKey: false,

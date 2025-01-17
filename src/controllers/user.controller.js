@@ -1,4 +1,5 @@
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 const {
   createUser,
   getUserByEmail,
@@ -7,6 +8,7 @@ const {
   deleteUser,
 } = require("../services/user.service");
 const { generateToken } = require("../libs/authToken");
+const { sendMail } = require("../libs/mail/handleMail");
 
 const register = async (req, res) => {
   try {
@@ -27,9 +29,11 @@ const register = async (req, res) => {
     //   generate a new token
     const token = generateToken({ email, _id: newUser._id });
 
-    return res
-      .status(201)
-      .json({ message: "User registered successfully", token });
+    return res.status(201).json({
+      message: "User registered successfully",
+      token,
+      userId: newUser._id,
+    });
   } catch (error) {
     return res
       .status(500)
@@ -56,7 +60,9 @@ const login = async (req, res) => {
     // Generate a JWT token
     const token = generateToken({ _id: user._id, email });
 
-    return res.status(200).json({ message: "Login successful", token });
+    return res
+      .status(200)
+      .json({ message: "Login successful", token, userId: user._id });
   } catch (error) {
     return res
       .status(500)
@@ -102,4 +108,113 @@ const userDelete = async (req, res) => {
   }
 };
 
-module.exports = { register, login, userUpdate, userDelete };
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    // Check if user exists
+    const user = await getUserByEmail(email);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Generate a verification code and expiration date
+    const verificationCode = crypto.randomInt(100000, 999999).toString();
+    const verificationCodeExpiry = Date.now() + 5 * 60 * 1000; // Code valid for 5 minutes
+
+    // update in db
+    await updateUser({
+      _id: user._id,
+      verificationCode,
+      verificationCodeExpiry,
+    });
+
+    // Send email with the verification code
+    const options = {
+      to: email,
+      subject: "Password Reset Verification Code",
+      html: `<p>Your verification code is: ${verificationCode}</p>
+      <small style='color:red'>After 5 minutes the code will expired!</small>`,
+    };
+    await sendMail(options, res);
+
+    return res
+      .status(200)
+      .json({ message: "Verification code sent to your email" });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to send verification code",
+      error: error.message,
+    });
+  }
+};
+
+const verifyCode = async (req, res) => {
+  try {
+    const { email, code } = req.body;
+    // Check if user exists
+    const user = await getUserByEmail(email);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Validate the verification code and expiry
+    const isValidCode =
+      user.verificationCode !== code ||
+      Date.now() >= user.verificationCodeExpiry;
+
+    if (isValidCode) {
+      return res
+        .status(400)
+        .json({ message: "Invalid or expired verification code" });
+    }
+
+    return res.status(200).json({ message: "Verification successful" });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Verification failed", error: error.message });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { email, password, confirmPassword } = req.body;
+    // Check if user exists
+    const user = await getUserByEmail(email);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Validate password and confirmPassword
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: "Passwords do not match" });
+    }
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Update the user's password also clear verify code and expiration date
+    await updateUser({
+      _id: user._id,
+      password: hashedPassword,
+      verificationCode: undefined,
+      verificationCodeExpiry: undefined,
+    });
+
+    return res.status(200).json({ message: "Password reset successful" });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Failed to reset password", error: error.message });
+  }
+};
+
+module.exports = {
+  register,
+  login,
+  userUpdate,
+  userDelete,
+  forgotPassword,
+  verifyCode,
+  resetPassword,
+};
