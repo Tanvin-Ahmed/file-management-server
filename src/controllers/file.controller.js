@@ -138,6 +138,7 @@ const copyFile = async (req, res) => {
   try {
     const { fileId } = req.params;
     const userId = req.user._id;
+    const { folderId } = req.body;
 
     if (!fileId) {
       return res.status(400).json({ message: "File ID is required." });
@@ -164,7 +165,7 @@ const copyFile = async (req, res) => {
       duplicateFile = await findFile({
         fileName: fileName,
         createdBy: userId,
-        folder: file.folder || null, // Ensure uniqueness per folder or root
+        folder: folderId || null, // Ensure uniqueness per folder or root
       });
       if (duplicateFile) {
         counter++;
@@ -182,12 +183,12 @@ const copyFile = async (req, res) => {
       fileType: file.fileType,
       fileSize: file.fileSize,
       createdBy: userId,
-      folder: file.folder || null, // Set folderId or null for root directory
+      folder: folderId || null, // Set folderId or null for root directory
     };
     const newFile = await saveFile(fileMetadata);
 
     // if file inside a folder then increment the size of the folder
-    if (file.folder) {
+    if (folderId) {
       const folder = await findFolder({ _id: file.folder, createdBy: userId });
       await updateFolder({
         _id: file.folder,
