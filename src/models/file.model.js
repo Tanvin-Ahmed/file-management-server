@@ -26,6 +26,7 @@ const fileSchema = new mongoose.Schema(
     },
     fileSize: {
       type: Number,
+      default: 0,
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
