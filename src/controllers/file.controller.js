@@ -7,6 +7,8 @@ const {
   copyFileGridFS,
   findFilesByFileType,
   findAllImages,
+  findAllFavorites,
+  findItemsByDate,
 } = require("../services/files.service");
 const { findFolder, updateFolder } = require("../services/folder.service");
 const { getUserById, updateUser } = require("../services/user.service");
@@ -356,6 +358,43 @@ const geImageFiles = async (req, res) => {
   }
 };
 
+const getFavoriteItems = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const allFavorites = await findAllFavorites(userId);
+
+    return res.status(200).json({
+      message: "Favorite items retrieved successfully.",
+      data: allFavorites,
+    });
+  } catch (error) {
+    console.error("Error retrieving favorite items:", error);
+    return res.status(500).json({ message: "Internal server error." });
+  }
+};
+
+const getItemsByDate = async (req, res) => {
+  try {
+    const { date } = req.query;
+    const userId = req.user._id;
+
+    if (!date) {
+      return res.status(400).json({ message: "Date are required." });
+    }
+
+    const items = await findItemsByDate(userId, date);
+
+    return res.status(200).json({
+      message: "Items retrieved successfully.",
+      data: items,
+    });
+  } catch (error) {
+    console.error("Error retrieving items by date:", error);
+    return res.status(500).json({ message: "Internal server error." });
+  }
+};
+
 module.exports = {
   uploadMultipleFiles,
   deleteFile,
@@ -365,4 +404,6 @@ module.exports = {
   getNotes,
   getPdfFiles,
   geImageFiles,
+  getFavoriteItems,
+  getItemsByDate,
 };

@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const { Readable } = require("stream");
 const GridFSBucket = mongoose.mongo.GridFSBucket;
 const { FileModel } = require("../models/file.model");
+const { FolderModel } = require("../models/folder.model");
 
 const saveFile = async (fileData) => await FileModel.create(fileData);
 const findFile = async (file) => await FileModel.findOne(file);
@@ -19,6 +20,48 @@ const findAllImages = async (userId) => {
     fileType: { $regex: /^image\// }, // Match all types starting with "image/"
     createdBy: userId,
   }).sort({ updatedAt: -1 });
+};
+
+const findAllFavorites = async (userId) => {
+  const [favoriteFiles, favoriteFolders] = await Promise.all([
+    FileModel.find({ createdBy: userId, isFavorite: true }),
+    FolderModel.find({ createdBy: userId, isFavorite: true }),
+  ]);
+
+  const allFavorites = [...favoriteFiles, ...favoriteFolders].sort(
+    (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
+  );
+
+  return allFavorites;
+};
+
+const findItemsByDate = async (userId, date) => {
+  const targetDate = new Date(date);
+  if (isNaN(targetDate)) {
+    throw new Error("Invalid date format.");
+  }
+
+  // Define start and end of the target date
+  const startOfDay = new Date(targetDate.setHours(0, 0, 0, 0));
+  const endOfDay = new Date(targetDate.setHours(23, 59, 59, 999));
+
+  // Fetch files and folders created or updated within the date range
+  const [files, folders] = await Promise.all([
+    FileModel.find({
+      createdBy: userId,
+      updatedAt: { $gte: startOfDay, $lte: endOfDay },
+    }),
+    FolderModel.find({
+      createdBy: userId,
+      updatedAt: { $gte: startOfDay, $lte: endOfDay },
+    }),
+  ]);
+
+  const combinedItems = [...files, ...folders].sort(
+    (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
+  );
+
+  return combinedItems;
 };
 
 const updateFile = async (folder) => {
@@ -133,4 +176,6 @@ module.exports = {
   findFiles,
   findFilesByFileType,
   findAllImages,
+  findAllFavorites,
+  findItemsByDate,
 };
