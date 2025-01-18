@@ -5,6 +5,8 @@ const {
   updateFile,
   gridFSfileRename,
   copyFileGridFS,
+  findFilesByFileType,
+  findAllImages,
 } = require("../services/files.service");
 const { findFolder, updateFolder } = require("../services/folder.service");
 const { getUserById, updateUser } = require("../services/user.service");
@@ -303,10 +305,64 @@ const deleteFile = async (req, res) => {
   }
 };
 
+const getNotes = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const notes = await findFilesByFileType(
+      userId,
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    );
+
+    return res.status(200).json({
+      message: "Word documents retrieved successfully.",
+      data: notes,
+    });
+  } catch (error) {
+    console.error("Error retrieving Word documents:", error);
+    return res.status(500).json({ message: "Internal server error." });
+  }
+};
+
+const getPdfFiles = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const pdfs = await findFilesByFileType(userId, "application/pdf");
+
+    return res.status(200).json({
+      message: "PDF files retrieved successfully.",
+      data: pdfs,
+    });
+  } catch (error) {
+    console.error("Error retrieving PDF files:", error);
+    return res.status(500).json({ message: "Internal server error." });
+  }
+};
+
+const geImageFiles = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const images = await findAllImages(userId);
+
+    return res.status(200).json({
+      message: "image files retrieved successfully.",
+      data: images,
+    });
+  } catch (error) {
+    console.error("Error retrieving image files:", error);
+    return res.status(500).json({ message: "Internal server error." });
+  }
+};
+
 module.exports = {
   uploadMultipleFiles,
   deleteFile,
   renameFile,
   copyOrDuplicateFile,
   favoriteFile,
+  getNotes,
+  getPdfFiles,
+  geImageFiles,
 };

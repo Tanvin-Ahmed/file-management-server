@@ -5,11 +5,18 @@ const {
   deleteFile,
   renameFile,
   copyOrDuplicateFile,
+  getNotes,
+  getPdfFiles,
+  geImageFiles,
 } = require("../controllers/file.controller");
 const { uploadMiddleware } = require("../middlewares/uploadFiles");
 const { checkFileSizesAndStorage } = require("../middlewares/checkFileSize");
 const { favoriteFolder } = require("../controllers/folder.controller");
 const router = express.Router();
+
+router.get("/notes", isUser, getNotes);
+router.get("/pdfs", isUser, getPdfFiles);
+router.get("/images", isUser, geImageFiles);
 
 router.post(
   "/save-files",
@@ -19,8 +26,10 @@ router.post(
   uploadMultipleFiles
 );
 router.post("/copy-or-duplicate-file/:fileId", isUser, copyOrDuplicateFile);
+
 router.put("/rename-file/:fileId", isUser, renameFile);
 router.put("/favorite-file/:fileId", isUser, favoriteFolder);
+
 router.delete("/delete-file/:fileId", isUser, deleteFile);
 
 module.exports = router;

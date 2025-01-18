@@ -7,6 +7,20 @@ const saveFile = async (fileData) => await FileModel.create(fileData);
 const findFile = async (file) => await FileModel.findOne(file);
 const findFiles = async (file) => await FileModel.find(file);
 
+const findFilesByFileType = async (userId, fileType) => {
+  return await FileModel.find({
+    createdBy: userId,
+    fileType,
+  }).sort({ updatedAt: -1 });
+};
+
+const findAllImages = async (userId) => {
+  return await FileModel.find({
+    fileType: { $regex: /^image\// }, // Match all types starting with "image/"
+    createdBy: userId,
+  }).sort({ updatedAt: -1 });
+};
+
 const updateFile = async (folder) => {
   const { _id, ...rest } = folder;
   return await FileModel.findByIdAndUpdate(_id, { ...rest }, { new: true });
@@ -117,4 +131,6 @@ module.exports = {
   updateFile,
   copyFileGridFS,
   findFiles,
+  findFilesByFileType,
+  findAllImages,
 };

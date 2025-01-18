@@ -21,7 +21,10 @@ const storage = new GridFsStorage({
 
 // File filter (only allow images, PDFs, and docs)
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = ["application/pdf", "application/msword"];
+  const allowedTypes = [
+    "application/pdf",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ];
   if (
     allowedTypes.includes(file.mimetype) ||
     file.mimetype.startsWith("image/")

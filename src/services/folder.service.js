@@ -13,6 +13,29 @@ const findFolder = async (folder) => await FolderModel.findOne(folder);
 const findFolders = async (folder) => await FolderModel.find(folder);
 const findFolderById = async (id) => await FolderModel.findById(id);
 
+const findFoldersInDescOrder = async (userId) => {
+  return await FolderModel.find({ createdBy: userId }).sort({
+    updatedAt: -1,
+  });
+};
+const findRecentFilesAndFolders = async (userId) => {
+  const recentFiles = await FileModel.find({ createdBy: userId })
+    .sort({ updatedAt: -1 })
+    .limit(10);
+
+  const recentFolders = await FolderModel.find({ createdBy: userId })
+    .sort({ updatedAt: -1 })
+    .limit(10);
+
+  const recentItems = [...recentFiles, ...recentFolders].sort((a, b) => {
+    return new Date(b.updatedAt) - new Date(a.updatedAt);
+  });
+
+  const result = recentItems.slice(0, 10);
+
+  return result;
+};
+
 const updateFolder = async (folder) => {
   const { _id, ...rest } = folder;
   return await FolderModel.findByIdAndUpdate(_id, { ...rest }, { new: true });
@@ -108,10 +131,12 @@ const copyFolderContents = async (
 };
 
 module.exports = {
+  findRecentFilesAndFolders,
   saveFolder,
   findFolder,
   updateFolder,
   deleteFolderContents,
   copyFolderContents,
   findFolderById,
+  findFoldersInDescOrder,
 };

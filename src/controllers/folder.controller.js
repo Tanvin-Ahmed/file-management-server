@@ -6,6 +6,8 @@ const {
   deleteFolderContents,
   copyFolderContents,
   findFolderById,
+  findRecentFilesAndFolders,
+  findFoldersInDescOrder,
 } = require("../services/folder.service");
 const { getUserById, updateUser } = require("../services/user.service");
 
@@ -222,10 +224,45 @@ const deleteFolder = async (req, res) => {
   }
 };
 
+const getRecentItems = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const result = await findRecentFilesAndFolders(userId);
+
+    return res.status(200).json({
+      message:
+        "Recently created or updated files and folders retrieved successfully.",
+      data: result,
+    });
+  } catch (error) {
+    console.error("Error fetching recent files and folders:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const getUserFolders = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const folders = await findFoldersInDescOrder(userId);
+
+    return res.status(200).json({
+      message: "Folders retrieved successfully.",
+      data: folders,
+    });
+  } catch (error) {
+    console.error("Error fetching user folders:", error);
+    return res.status(500).json({ message: "Internal server error." });
+  }
+};
+
 module.exports = {
   createFolder,
   favoriteFolder,
   renameFolder,
   deleteFolder,
   copyOrDuplicateFolder,
+  getRecentItems,
+  getUserFolders,
 };
