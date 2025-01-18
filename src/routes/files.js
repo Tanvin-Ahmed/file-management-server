@@ -4,10 +4,11 @@ const {
   uploadMultipleFiles,
   deleteFile,
   renameFile,
-  copyFile,
+  copyOrDuplicateFile,
 } = require("../controllers/file.controller");
 const { uploadMiddleware } = require("../middlewares/uploadFiles");
 const { checkFileSizesAndStorage } = require("../middlewares/checkFileSize");
+const { favoriteFolder } = require("../controllers/folder.controller");
 const router = express.Router();
 
 router.post(
@@ -17,8 +18,9 @@ router.post(
   uploadMiddleware,
   uploadMultipleFiles
 );
+router.post("/copy-or-duplicate-file/:fileId", isUser, copyOrDuplicateFile);
 router.put("/rename-file/:fileId", isUser, renameFile);
-router.post("/copy-file/:fileId", isUser, copyFile);
+router.put("/favorite-file/:fileId", isUser, favoriteFolder);
 router.delete("/delete-file/:fileId", isUser, deleteFile);
 
 module.exports = router;

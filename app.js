@@ -7,6 +7,7 @@ require("dotenv").config();
 const indexRouter = require("./src/routes/index");
 const usersRouter = require("./src/routes/users");
 const filesRouter = require("./src/routes/files");
+const foldersRouter = require("./src/routes/folders");
 const { dbConnection } = require("./src/db");
 const { apiVersionCheck } = require("./src/middlewares/apiVersionCheck");
 
@@ -23,5 +24,6 @@ app.use(apiVersionCheck("v1"));
 app.use("/", indexRouter);
 app.use("/api/v1/user", usersRouter);
 app.use("/api/v1/files", filesRouter);
+app.use("/api/v1/folders", foldersRouter);
 
 module.exports = app;

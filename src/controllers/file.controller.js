@@ -1,26 +1,24 @@
 const {
   saveFile,
   findFile,
-  findFolder,
-  updateFolder,
   fileDelete,
   updateFile,
   gridFSfileRename,
   copyFileGridFS,
 } = require("../services/files.service");
+const { findFolder, updateFolder } = require("../services/folder.service");
 const { getUserById, updateUser } = require("../services/user.service");
 const path = require("path");
 
 const uploadMultipleFiles = async (req, res) => {
-  const userId = req.user._id; // Assuming user ID is available from authentication middleware
-  const files = req.files; // Multer adds the files array to the request
-  const { folderId } = req.body; // Folder ID to specify the upload location
+  const userId = req.user._id;
+  const files = req.files;
+  const { folderId } = req.body;
 
   try {
     // Validate input
     if (!files || files.length === 0) {
       return res.status(400).json({
-        success: false,
         message: "No files provided for upload.",
       });
     }
@@ -78,7 +76,7 @@ const uploadMultipleFiles = async (req, res) => {
     const user = await getUserById(userId);
     await updateUser({
       _id: userId,
-      usedStorage: user.usedStorage + totalUploadSize, // Add to the existing value
+      usedStorage: user.usedStorage + totalUploadSize,
     });
 
     // if file created inside a folder, then update folder size
@@ -134,10 +132,17 @@ const renameFile = async (req, res) => {
   }
 };
 
-const copyFile = async (req, res) => {
+const copyOrDuplicateFile = async (req, res) => {
   try {
     const { fileId } = req.params;
     const userId = req.user._id;
+
+    if (req.body?.folderId === undefined) {
+      return res
+        .status(400)
+        .json({ message: "Folder ID must be string or null." });
+    }
+
     const { folderId } = req.body;
 
     if (!fileId) {
@@ -207,6 +212,43 @@ const copyFile = async (req, res) => {
   }
 };
 
+const favoriteFile = async (req, res) => {
+  try {
+    const { fileId } = req.params;
+    const user = req.user;
+    const { isFavorite } = req.body;
+
+    if (!fileId) {
+      return res.status(400).json({ message: "File ID is required" });
+    }
+
+    if (isFavorite === undefined) {
+      return res
+        .status(400)
+        .json({ message: "Need to provide isFavorite property" });
+    }
+
+    const file = await findFile({ _id: fileId, createdBy: user._id });
+    if (!file) {
+      return res.status(404).json({ message: "File not found" });
+    }
+
+    const updatedFile = await updateFile({
+      _id: fileId,
+      isFavorite,
+    });
+
+    return res.status(200).json({
+      message: "File marked as favorite successfully",
+      data: updatedFile,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Internal server error.", error: error.message });
+  }
+};
+
 const deleteFile = async (req, res) => {
   try {
     const { fileId } = req.params; // Assuming the file ID is passed as a route parameter
@@ -246,4 +288,10 @@ const deleteFile = async (req, res) => {
   }
 };
 
-module.exports = { uploadMultipleFiles, deleteFile, renameFile, copyFile };
+module.exports = {
+  uploadMultipleFiles,
+  deleteFile,
+  renameFile,
+  copyOrDuplicateFile,
+  favoriteFile,
+};
