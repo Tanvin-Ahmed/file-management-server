@@ -201,6 +201,13 @@ const copyOrDuplicateFile = async (req, res) => {
       });
     }
 
+    // update usedStorage in user information
+    const user = await getUserById(userId);
+    await updateUser({
+      _id: user._id,
+      usedStorage: user.usedStorage + file.fileSize,
+    });
+
     return res
       .status(201)
       .json({ message: "File copied successfully!", data: newFile });
@@ -252,31 +259,39 @@ const favoriteFile = async (req, res) => {
 const deleteFile = async (req, res) => {
   try {
     const { fileId } = req.params; // Assuming the file ID is passed as a route parameter
-    const user = req.user;
+    const userId = req.user._id;
 
     if (!fileId) {
       return res.status(400).json({ message: "File ID is required." });
     }
 
     // Check if the file exists in the database
-    const file = await findFile({ _id: fileId, createdBy: user._id });
+    const file = await findFile({ _id: fileId, createdBy: userId });
 
     if (!file) {
       return res.status(404).json({ message: "File not found." });
     }
 
+    const deletedFile = await fileDelete(file);
+
+    // minus the size form usedStorage
+    const user = await getUserById(userId);
+    await updateUser({
+      _id: userId,
+      usedStorage: user.usedStorage - file.fileSize,
+    });
+
+    // minus size from folder if folder exists
     if (file.folder) {
       const folder = await findFolder({
         _id: file.folder,
-        createdBy: user._id,
+        createdBy: userId,
       });
       await updateFolder({
         _id: file.folder,
         size: folder.size - file.fileSize,
       });
     }
-
-    const deletedFile = await fileDelete(file);
 
     return res
       .status(200)

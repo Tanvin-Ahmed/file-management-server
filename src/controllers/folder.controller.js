@@ -7,6 +7,7 @@ const {
   copyFolderContents,
   findFolderById,
 } = require("../services/folder.service");
+const { getUserById, updateUser } = require("../services/user.service");
 
 const createFolder = async (req, res) => {
   const userId = req.user._id;
@@ -145,6 +146,25 @@ const copyOrDuplicateFolder = async (req, res) => {
       userId
     );
 
+    // if folder copy or duplicate inside another folder then parent folder size need to update
+    if (destinationParentFolderId) {
+      const destinationFolder = await findFolder({
+        _id: destinationParentFolderId,
+        createdBy: userId,
+      });
+      await updateFolder({
+        _id: destinationFolder._id,
+        size: destinationFolder.size + copiedFolder.size,
+      });
+    }
+
+    // update size in user
+    const user = await getUserById(userId);
+    await updateUser({
+      _id: userId,
+      usedStorage: user.usedStorage + copiedFolder.size,
+    });
+
     return res.status(201).json({
       message: "Folder copied successfully",
       data: copiedFolder,
@@ -172,6 +192,26 @@ const deleteFolder = async (req, res) => {
 
     // Recursively delete the folder and its contents
     await deleteFolderContents(folderId);
+
+    // if parent folder exists, then decrease the size of parent folder
+    if (folder.parentFolder) {
+      const parentFolder = await findFolder({
+        _id: folder.parentFolder,
+        createdBy: userId,
+      });
+
+      await updateFolder({
+        _id: parentFolder._id,
+        size: parentFolder.size - folder.size,
+      });
+    }
+
+    // update size in user
+    const user = await getUserById(userId);
+    await updateUser({
+      _id: userId,
+      usedStorage: user.usedStorage - folder.size,
+    });
 
     return res
       .status(200)

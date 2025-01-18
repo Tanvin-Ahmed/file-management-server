@@ -1,9 +1,11 @@
+const { FileModel } = require("../models/file.model");
 const { FolderModel } = require("../models/folder.model");
 const {
   findFile,
   saveFile,
   copyFileGridFS,
   findFiles,
+  fileDelete,
 } = require("./files.service");
 
 const saveFolder = async (folder) => await FolderModel.create(folder);
@@ -25,8 +27,18 @@ const deleteFolderContents = async (folderId) => {
     await deleteFolderContents(subfolder._id);
   }
 
-  // Delete all files in the folder
-  await FileModel.deleteMany({ folder: folderId });
+  // Find all files in the folder
+  const files = await FileModel.find({ folder: folderId });
+
+  // Delete each file from GridFS and FileModel
+  for (const file of files) {
+    try {
+      await fileDelete(file);
+    } catch (error) {
+      console.error(`Error deleting file: ${file.fileId}`, error);
+      throw new Error(`Failed to delete file: ${file.fileName}`);
+    }
+  }
 
   // Delete the folder itself
   await FolderModel.findByIdAndDelete(folderId);
