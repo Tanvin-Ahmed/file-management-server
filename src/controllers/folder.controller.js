@@ -9,6 +9,7 @@ const {
   findRecentFilesAndFolders,
   findFoldersInDescOrder,
   findItemsOfFolder,
+  updatePrivacy,
 } = require("../services/folder.service");
 const { getUserById, updateUser } = require("../services/user.service");
 
@@ -279,6 +280,33 @@ const getFolderContents = async (req, res) => {
   }
 };
 
+const toggleFolderPrivacy = async (req, res) => {
+  try {
+    const { folderId, privateStatus } = req.body;
+
+    if (typeof privateStatus !== "boolean") {
+      return res.status(400).json({ message: "Invalid private status value." });
+    }
+
+    // Find the root folder
+    const rootFolder = await findFolderById(folderId);
+    if (!rootFolder) {
+      return res.status(404).json({ message: "Folder not found." });
+    }
+
+    await updatePrivacy(folderId, privateStatus);
+
+    res.status(200).json({
+      message: `Folder and its contents have been made ${
+        privateStatus ? "private" : "public"
+      }.`,
+    });
+  } catch (error) {
+    console.error("Error toggling folder privacy:", error.message);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
+
 module.exports = {
   createFolder,
   favoriteFolder,
@@ -288,4 +316,5 @@ module.exports = {
   getRecentItems,
   getUserFolders,
   getFolderContents,
+  toggleFolderPrivacy,
 };

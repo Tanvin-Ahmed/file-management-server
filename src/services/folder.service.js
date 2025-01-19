@@ -144,6 +144,22 @@ const copyFolderContents = async (
   return copiedFolder;
 };
 
+const updatePrivacy = async (folderId, privateStatus) => {
+  // Update the current folder's privacy
+  await FolderModel.findByIdAndUpdate(folderId, { private: privateStatus });
+
+  // Update all files in the current folder
+  await FileModel.updateMany({ folder: folderId }, { private: privateStatus });
+
+  // Find child folders
+  const childFolders = await FolderModel.find({ parentFolder: folderId });
+
+  // Recursively update privacy for child folders
+  for (const childFolder of childFolders) {
+    await updatePrivacy(childFolder._id, privateStatus);
+  }
+};
+
 module.exports = {
   findRecentFilesAndFolders,
   saveFolder,
@@ -154,4 +170,5 @@ module.exports = {
   findFolderById,
   findFoldersInDescOrder,
   findItemsOfFolder,
+  updatePrivacy,
 };

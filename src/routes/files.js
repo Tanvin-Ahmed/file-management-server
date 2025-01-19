@@ -12,6 +12,7 @@ const {
   favoriteFile,
   getItemsByDate,
   previewFile,
+  updateFilePrivacy,
 } = require("../controllers/file.controller");
 const { uploadMiddleware } = require("../middlewares/uploadFiles");
 const { checkFileSizesAndStorage } = require("../middlewares/checkFileSize");
@@ -35,6 +36,7 @@ router.post("/copy-or-duplicate-file/:fileId", isUser, copyOrDuplicateFile);
 
 router.put("/rename-file/:fileId", isUser, renameFile);
 router.put("/favorite-file/:fileId", isUser, favoriteFile);
+router.put("/privacy-update", isUser, updateFilePrivacy);
 
 router.delete("/delete-file/:fileId", isUser, deleteFile);
 

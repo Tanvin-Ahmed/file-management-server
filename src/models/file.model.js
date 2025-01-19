@@ -37,6 +37,10 @@ const fileSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    private: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

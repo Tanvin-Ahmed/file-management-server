@@ -5,27 +5,18 @@ const { FileModel } = require("../models/file.model");
 const { FolderModel } = require("../models/folder.model");
 
 const saveFile = async (fileData) => await FileModel.create(fileData);
-const findFile = async (file) => await FileModel.findOne(file);
-const findFiles = async (file) => await FileModel.find(file);
+const findFile = async (query) => await FileModel.findOne(query);
+const findFiles = async (query) => await FileModel.find(query);
+const findFileById = async (id) => await FileModel.findById(id);
 
-const findFilesByFileType = async (userId, fileType) => {
-  return await FileModel.find({
-    createdBy: userId,
-    fileType,
-  }).sort({ updatedAt: -1 });
+const findFilesByFileType = async (query) => {
+  return await FileModel.find(query).sort({ updatedAt: -1 });
 };
 
-const findAllImages = async (userId) => {
-  return await FileModel.find({
-    fileType: { $regex: /^image\// }, // Match all types starting with "image/"
-    createdBy: userId,
-  }).sort({ updatedAt: -1 });
-};
-
-const findAllFavorites = async (userId) => {
+const findAllFavorites = async (userId, private) => {
   const [favoriteFiles, favoriteFolders] = await Promise.all([
-    FileModel.find({ createdBy: userId, isFavorite: true }),
-    FolderModel.find({ createdBy: userId, isFavorite: true }),
+    FileModel.find({ createdBy: userId, isFavorite: true, private }),
+    FolderModel.find({ createdBy: userId, isFavorite: true, private }),
   ]);
 
   const allFavorites = [...favoriteFiles, ...favoriteFolders].sort(
@@ -35,7 +26,7 @@ const findAllFavorites = async (userId) => {
   return allFavorites;
 };
 
-const findItemsByDate = async (userId, date) => {
+const findItemsByDate = async (userId, date, private) => {
   const targetDate = new Date(date);
   if (isNaN(targetDate)) {
     throw new Error("Invalid date format.");
@@ -50,10 +41,12 @@ const findItemsByDate = async (userId, date) => {
     FileModel.find({
       createdBy: userId,
       updatedAt: { $gte: startOfDay, $lte: endOfDay },
+      private,
     }),
     FolderModel.find({
       createdBy: userId,
       updatedAt: { $gte: startOfDay, $lte: endOfDay },
+      private,
     }),
   ]);
 
@@ -198,8 +191,8 @@ module.exports = {
   copyFileGridFS,
   findFiles,
   findFilesByFileType,
-  findAllImages,
   findAllFavorites,
   findItemsByDate,
   getDownloadStream,
+  findFileById,
 };

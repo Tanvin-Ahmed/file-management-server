@@ -11,6 +11,7 @@ const {
   findItemsByDate,
   findItemsOfFolder,
   getDownloadStream,
+  findFileById,
 } = require("../services/files.service");
 const { findFolder, updateFolder } = require("../services/folder.service");
 const { getUserById, updateUser } = require("../services/user.service");
@@ -160,6 +161,29 @@ const copyOrDuplicateFile = async (req, res) => {
       return res.status(404).json({ message: "File not found." });
     }
 
+    // if root folder then check is file is public or private
+    if (folderId === null && file.private) {
+      return res.status(400).json({
+        message:
+          "Root directory is a public directory. But you want to copy a private file to a public directory.",
+      });
+    }
+
+    // if not root folder then check is file and folder privateStatus is same or different
+    if (folderId) {
+      const folder = await findFolder({ _id: folderId, createdBy: userId });
+      if (!folder) {
+        return res.status(404).json({ message: "Folder not found." });
+      }
+
+      if (file.private !== folder.private) {
+        return res.status(400).json({
+          message:
+            "Private file is not allowed to copy in a public folder. Or Public file is not allow to copy in private folder.",
+        });
+      }
+    }
+
     // Extract base filename (without count or extension)
     const originalName = file.fileName;
     const fileExtension = originalName.includes(".")
@@ -195,6 +219,7 @@ const copyOrDuplicateFile = async (req, res) => {
       fileSize: file.fileSize,
       createdBy: userId,
       folder: folderId || null, // Set folderId or null for root directory
+      private: file.private,
     };
     const newFile = await saveFile(fileMetadata);
 
@@ -312,11 +337,18 @@ const deleteFile = async (req, res) => {
 const getNotes = async (req, res) => {
   try {
     const userId = req.user._id;
+    const private = req.query?.private;
 
-    const notes = await findFilesByFileType(
-      userId,
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    );
+    if (private === undefined) {
+      return res.status(400).json({ message: "Private status is required." });
+    }
+
+    const notes = await findFilesByFileType({
+      createdBy: userId,
+      fileType:
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      private,
+    });
 
     return res.status(200).json({
       message: "Word documents retrieved successfully.",
@@ -331,8 +363,17 @@ const getNotes = async (req, res) => {
 const getPdfFiles = async (req, res) => {
   try {
     const userId = req.user._id;
+    const private = req.query?.private;
 
-    const pdfs = await findFilesByFileType(userId, "application/pdf");
+    if (private === undefined) {
+      return res.status(400).json({ message: "Private status is required." });
+    }
+
+    const pdfs = await findFilesByFileType({
+      createdBy: userId,
+      fileType: "application/pdf",
+      private,
+    });
 
     return res.status(200).json({
       message: "PDF files retrieved successfully.",
@@ -347,8 +388,17 @@ const getPdfFiles = async (req, res) => {
 const geImageFiles = async (req, res) => {
   try {
     const userId = req.user._id;
+    const private = req.query?.private;
 
-    const images = await findAllImages(userId);
+    if (private === undefined) {
+      return res.status(400).json({ message: "Private status is required." });
+    }
+
+    const images = await findFilesByFileType({
+      fileType: { $regex: /^image\// }, // Match all types starting with "image/"
+      createdBy: userId,
+      private,
+    });
 
     return res.status(200).json({
       message: "image files retrieved successfully.",
@@ -363,8 +413,13 @@ const geImageFiles = async (req, res) => {
 const getFavoriteItems = async (req, res) => {
   try {
     const userId = req.user._id;
+    const private = req.query?.private;
 
-    const allFavorites = await findAllFavorites(userId);
+    if (private === undefined) {
+      return res.status(400).json({ message: "Private status is required." });
+    }
+
+    const allFavorites = await findAllFavorites(userId, private);
 
     return res.status(200).json({
       message: "Favorite items retrieved successfully.",
@@ -378,14 +433,18 @@ const getFavoriteItems = async (req, res) => {
 
 const getItemsByDate = async (req, res) => {
   try {
-    const { date } = req.query;
     const userId = req.user._id;
+    const { date, private } = req.query;
+
+    if (private === undefined) {
+      return res.status(400).json({ message: "Private status is required." });
+    }
 
     if (!date) {
       return res.status(400).json({ message: "Date are required." });
     }
 
-    const items = await findItemsByDate(userId, date);
+    const items = await findItemsByDate(userId, date, private);
 
     return res.status(200).json({
       message: "Items retrieved successfully.",
@@ -423,6 +482,32 @@ const previewFile = async (req, res) => {
   }
 };
 
+const updateFilePrivacy = async (req, res) => {
+  try {
+    const { fileId, privateStatus } = req.body;
+
+    if (typeof privateStatus !== "boolean") {
+      return res.status(400).json({ message: "Invalid private status value." });
+    }
+
+    // Find the file by ID
+    const file = await findFileById(fileId);
+    if (!file) {
+      return res.status(404).json({ message: "File not found." });
+    }
+
+    // Update the file's privacy
+    await updateFile({ _id: file._id, private: privateStatus });
+
+    res.status(200).json({
+      message: `File has been made ${privateStatus ? "private" : "public"}.`,
+    });
+  } catch (error) {
+    console.error("Error updating file privacy:", error.message);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
+
 module.exports = {
   uploadMultipleFiles,
   deleteFile,
@@ -435,4 +520,5 @@ module.exports = {
   getFavoriteItems,
   getItemsByDate,
   previewFile,
+  updateFilePrivacy,
 };

@@ -9,6 +9,7 @@ const {
   getRecentItems,
   getUserFolders,
   getFolderContents,
+  toggleFolderPrivacy,
 } = require("../controllers/folder.controller");
 const router = express.Router();
 
@@ -21,6 +22,7 @@ router.post("/copy-or-duplicate-folder", isUser, copyOrDuplicateFolder);
 
 router.put("/favorite-folder/:folderId", isUser, favoriteFolder);
 router.put("/rename-folder/:folderId", isUser, renameFolder);
+router.put("/privacy-update", isUser, toggleFolderPrivacy);
 
 router.delete("/delete-folder/:folderId", isUser, deleteFolder);
 
