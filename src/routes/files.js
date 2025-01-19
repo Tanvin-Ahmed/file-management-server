@@ -11,6 +11,7 @@ const {
   getFavoriteItems,
   favoriteFile,
   getItemsByDate,
+  previewFile,
 } = require("../controllers/file.controller");
 const { uploadMiddleware } = require("../middlewares/uploadFiles");
 const { checkFileSizesAndStorage } = require("../middlewares/checkFileSize");
@@ -21,6 +22,7 @@ router.get("/pdfs", isUser, getPdfFiles);
 router.get("/images", isUser, geImageFiles);
 router.get("/favorite", isUser, getFavoriteItems);
 router.get("/items-by-date", isUser, getItemsByDate);
+router.get("/preview-file", isUser, previewFile);
 
 router.post(
   "/save-files",

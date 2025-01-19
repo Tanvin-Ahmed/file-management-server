@@ -10,6 +10,7 @@ const {
   findAllFavorites,
   findItemsByDate,
   findItemsOfFolder,
+  getDownloadStream,
 } = require("../services/files.service");
 const { findFolder, updateFolder } = require("../services/folder.service");
 const { getUserById, updateUser } = require("../services/user.service");
@@ -396,6 +397,32 @@ const getItemsByDate = async (req, res) => {
   }
 };
 
+const previewFile = async (req, res) => {
+  try {
+    const { fileId } = req.query;
+
+    // Get the download stream and file metadata
+    const { downloadStream, file } = await getDownloadStream(fileId, "uploads");
+
+    // Set appropriate headers
+    res.set({
+      "Content-Type": file.contentType,
+      "Content-Disposition": `inline; filename="${file.filename}"`,
+    });
+
+    // Pipe the stream to the response
+    downloadStream.pipe(res);
+
+    downloadStream.on("error", (err) => {
+      console.error("Error streaming file:", err.message);
+      res.status(500).json({ message: "Error streaming file" });
+    });
+  } catch (error) {
+    console.error("Error in previewFile:", error.message);
+    res.status(500).json({ message: error.message || "Internal server error" });
+  }
+};
+
 module.exports = {
   uploadMultipleFiles,
   deleteFile,
@@ -407,4 +434,5 @@ module.exports = {
   geImageFiles,
   getFavoriteItems,
   getItemsByDate,
+  previewFile,
 };

@@ -166,6 +166,29 @@ const fileDelete = async (file) => {
   return await FileModel.findByIdAndDelete(file._id);
 };
 
+const getDownloadStream = async (fileId, bucketName) => {
+  try {
+    const db = mongoose.connection.db;
+    const bucket = new mongoose.mongo.GridFSBucket(db, {
+      bucketName,
+    });
+
+    // Find the file metadata
+    const file = await db
+      .collection(`${bucketName}.files`)
+      .findOne({ _id: new mongoose.Types.ObjectId(fileId) });
+    if (!file) {
+      throw new Error("File not found");
+    }
+
+    // Return the download stream and file metadata
+    const downloadStream = bucket.openDownloadStream(file._id);
+    return { downloadStream, file };
+  } catch (error) {
+    throw new Error(error.message || "Error retrieving file stream");
+  }
+};
+
 module.exports = {
   saveFile,
   findFile,
@@ -178,4 +201,5 @@ module.exports = {
   findAllImages,
   findAllFavorites,
   findItemsByDate,
+  getDownloadStream,
 };

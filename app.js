@@ -8,6 +8,8 @@ const indexRouter = require("./src/routes/index");
 const usersRouter = require("./src/routes/users");
 const filesRouter = require("./src/routes/files");
 const foldersRouter = require("./src/routes/folders");
+const pinRouter = require("./src/routes/pin");
+
 const { dbConnection } = require("./src/db");
 const { apiVersionCheck } = require("./src/middlewares/apiVersionCheck");
 
@@ -25,5 +27,6 @@ app.use("/", indexRouter);
 app.use("/api/v1/user", usersRouter);
 app.use("/api/v1/files", filesRouter);
 app.use("/api/v1/folders", foldersRouter);
+app.use("/api/v1/pin", pinRouter);
 
 module.exports = app;

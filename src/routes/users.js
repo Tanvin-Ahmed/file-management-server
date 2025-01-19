@@ -9,12 +9,14 @@ const {
   resetPassword,
   getUserStorageSummary,
   uploadUserProfileImage,
+  previewProfile,
 } = require("../controllers/user.controller");
 const { isUser } = require("../middlewares/isUser");
 const { uploadProfileMiddleware } = require("../middlewares/uploadProfile");
 const router = express.Router();
 
 router.get("/summary", isUser, getUserStorageSummary);
+router.get("/profile-preview", isUser, previewProfile);
 
 router.post("/register", register);
 router.post("/login", login);

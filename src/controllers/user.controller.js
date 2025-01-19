@@ -12,6 +12,7 @@ const {
 const { generateToken } = require("../libs/authToken");
 const { sendMail } = require("../libs/mail/handleMail");
 const { config } = require("../config");
+const { getDownloadStream } = require("../services/files.service");
 
 const register = async (req, res) => {
   try {
@@ -263,6 +264,37 @@ const getUserStorageSummary = async (req, res) => {
   }
 };
 
+const previewProfile = async (req, res) => {
+  try {
+    const { imageId } = req.query;
+
+    // Get the download stream and file metadata
+    const { downloadStream, file } = await getDownloadStream(
+      imageId,
+      "profiles"
+    );
+
+    // Set appropriate headers
+    res.set({
+      "Content-Type": file.contentType,
+      "Content-Disposition": `inline; filename="${file.filename}"`,
+    });
+
+    // Pipe the stream to the response
+    downloadStream.pipe(res);
+
+    downloadStream.on("error", (err) => {
+      console.error("Error streaming file:", err.message);
+      return res.status(500).json({ message: "Error streaming file" });
+    });
+  } catch (error) {
+    console.error("Error in previewFile:", error.message);
+    return res
+      .status(500)
+      .json({ message: error.message || "Internal server error" });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -273,4 +305,5 @@ module.exports = {
   resetPassword,
   getUserStorageSummary,
   uploadUserProfileImage,
+  previewProfile,
 };
