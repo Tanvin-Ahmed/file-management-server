@@ -5,7 +5,7 @@ const fileSchema = new mongoose.Schema(
     fileName: { type: String, required: true },
     fileId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "fs.files",
+      ref: "uploads.files",
       required: true,
     },
     fileType: {

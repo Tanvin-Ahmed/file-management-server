@@ -15,6 +15,7 @@ const UserSchema = new mongoose.Schema(
     },
     imageId: {
       type: String,
+      ref: "profiles.files",
     },
     verificationCode: {
       type: String,

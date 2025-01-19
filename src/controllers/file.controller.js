@@ -9,6 +9,7 @@ const {
   findAllImages,
   findAllFavorites,
   findItemsByDate,
+  findItemsOfFolder,
 } = require("../services/files.service");
 const { findFolder, updateFolder } = require("../services/folder.service");
 const { getUserById, updateUser } = require("../services/user.service");

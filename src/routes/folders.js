@@ -8,10 +8,12 @@ const {
   copyOrDuplicateFolder,
   getRecentItems,
   getUserFolders,
+  getFolderContents,
 } = require("../controllers/folder.controller");
 const router = express.Router();
 
 router.get("/all", isUser, getUserFolders);
+router.get("/folder-content", isUser, getFolderContents);
 router.get("/recent-items", isUser, getRecentItems);
 
 router.post("/create", isUser, createFolder);

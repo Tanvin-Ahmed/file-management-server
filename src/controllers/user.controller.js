@@ -6,9 +6,12 @@ const {
   getUserById,
   updateUser,
   deleteUser,
+  findSummery,
+  deleteProfileIfExist,
 } = require("../services/user.service");
 const { generateToken } = require("../libs/authToken");
 const { sendMail } = require("../libs/mail/handleMail");
+const { config } = require("../config");
 
 const register = async (req, res) => {
   try {
@@ -90,6 +93,26 @@ const userUpdate = async (req, res) => {
     return res
       .status(500)
       .json({ message: "Update failed", error: error.message });
+  }
+};
+
+const uploadUserProfileImage = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const file = req.file;
+    if (!file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    await deleteProfileIfExist(userId);
+    const updatedUser = await updateUser({ _id: userId, imageId: file.id });
+
+    return res
+      .status(200)
+      .json({ message: "Profile change successfully", data: updatedUser });
+  } catch (error) {
+    console.error("Error in uploadUserProfileImage:", error.message);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -209,6 +232,37 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const getUserStorageSummary = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const user = await getUserById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    const totalStorage = config.max_storage;
+    const usedStorage = user.usedStorage;
+    const availableStorage = totalStorage - usedStorage;
+
+    const sizeSummery = await findSummery(userId);
+
+    // Respond with summary data
+    return res.status(200).json({
+      message: "Storage summary retrieved successfully.",
+      data: {
+        totalStorage,
+        usedStorage,
+        availableStorage,
+        ...sizeSummery,
+      },
+    });
+  } catch (error) {
+    console.error("Error retrieving storage summary:", error);
+    return res.status(500).json({ message: "Internal server error." });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -217,4 +271,6 @@ module.exports = {
   forgotPassword,
   verifyCode,
   resetPassword,
+  getUserStorageSummary,
+  uploadUserProfileImage,
 };

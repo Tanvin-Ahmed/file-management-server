@@ -18,6 +18,7 @@ const findFoldersInDescOrder = async (userId) => {
     updatedAt: -1,
   });
 };
+
 const findRecentFilesAndFolders = async (userId) => {
   const recentFiles = await FileModel.find({ createdBy: userId })
     .sort({ updatedAt: -1 })
@@ -34,6 +35,19 @@ const findRecentFilesAndFolders = async (userId) => {
   const result = recentItems.slice(0, 10);
 
   return result;
+};
+
+const findItemsOfFolder = async (userId, folderId) => {
+  const [files, subfolders] = await Promise.all([
+    FileModel.find({ folder: folderId, createdBy: userId }),
+    FolderModel.find({ parentFolder: folderId, createdBy: userId }),
+  ]);
+
+  const folderContents = [...files, ...subfolders].sort(
+    (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
+  );
+
+  return folderContents;
 };
 
 const updateFolder = async (folder) => {
@@ -139,4 +153,5 @@ module.exports = {
   copyFolderContents,
   findFolderById,
   findFoldersInDescOrder,
+  findItemsOfFolder,
 };
