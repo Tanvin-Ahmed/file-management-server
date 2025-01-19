@@ -13,18 +13,18 @@ const findFolder = async (folder) => await FolderModel.findOne(folder);
 const findFolders = async (folder) => await FolderModel.find(folder);
 const findFolderById = async (id) => await FolderModel.findById(id);
 
-const findFoldersInDescOrder = async (userId) => {
-  return await FolderModel.find({ createdBy: userId }).sort({
+const findFoldersInDescOrder = async (userId, private) => {
+  return await FolderModel.find({ createdBy: userId, private }).sort({
     updatedAt: -1,
   });
 };
 
-const findRecentFilesAndFolders = async (userId) => {
-  const recentFiles = await FileModel.find({ createdBy: userId })
+const findRecentFilesAndFolders = async (userId, private) => {
+  const recentFiles = await FileModel.find({ createdBy: userId, private })
     .sort({ updatedAt: -1 })
     .limit(10);
 
-  const recentFolders = await FolderModel.find({ createdBy: userId })
+  const recentFolders = await FolderModel.find({ createdBy: userId, private })
     .sort({ updatedAt: -1 })
     .limit(10);
 

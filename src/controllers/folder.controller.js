@@ -143,6 +143,32 @@ const copyOrDuplicateFolder = async (req, res) => {
       return res.status(404).json({ message: "Source folder not found" });
     }
 
+    // if root destinationFolder then check is file is public or private
+    if (destinationParentFolderId === null && sourceFolder.private) {
+      return res.status(400).json({
+        message:
+          "Root directory is a public directory. But you want to copy a private folder to a public directory.",
+      });
+    }
+
+    // if not root directory then check is sourceFolder and destinationFolder privateStatus is same or different
+    if (destinationParentFolderId) {
+      const folder = await findFolder({
+        _id: destinationParentFolderId,
+        createdBy: userId,
+      });
+      if (!folder) {
+        return res.status(404).json({ message: "Folder not found." });
+      }
+
+      if (sourceFolder.private !== folder.private) {
+        return res.status(400).json({
+          message:
+            "Private folder is not allowed to copy in a public folder. Or Public folder is not allow to copy in private folder.",
+        });
+      }
+    }
+
     // Perform the recursive copy operation
     const copiedFolder = await copyFolderContents(
       folderId,
@@ -229,8 +255,13 @@ const deleteFolder = async (req, res) => {
 const getRecentItems = async (req, res) => {
   try {
     const userId = req.user._id;
+    const private = req.query?.private;
 
-    const result = await findRecentFilesAndFolders(userId);
+    if (private === undefined) {
+      return res.status(400).json({ message: "Private status is required." });
+    }
+
+    const result = await findRecentFilesAndFolders(userId, private);
 
     return res.status(200).json({
       message:
@@ -246,8 +277,13 @@ const getRecentItems = async (req, res) => {
 const getUserFolders = async (req, res) => {
   try {
     const userId = req.user._id;
+    const private = req.query?.private;
 
-    const folders = await findFoldersInDescOrder(userId);
+    if (private === undefined) {
+      return res.status(400).json({ message: "Private status is required." });
+    }
+
+    const folders = await findFoldersInDescOrder(userId, private);
 
     return res.status(200).json({
       message: "Folders retrieved successfully.",
