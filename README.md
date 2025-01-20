@@ -63,7 +63,7 @@ yarn run dev
 
 ## API References
 
-### User API References
+### User management API References
 
 #### Register user - POST API (public)
 
@@ -181,4 +181,95 @@ url = http://localhost:3000/api/v1/user/delete
 headers = {Authorization: 'Bearer ' + jwt_token}
 
 // it just delete the logged in user.
+```
+
+### Folder management API References
+
+#### Create a new folder - POST API (private)
+
+```
+url = http://localhost:3000/api/v1/folders/create
+headers = {Authorization: 'Bearer ' + jwt_token}
+body = {
+    "folderName": "name",
+    "parentFolderId": null // if you want to create folder in root dir
+}
+```
+
+#### Copy the entire folder with it's files - POST API (private)
+
+```
+url = http://localhost:3000/api/v1/folders/copy-or-duplicate-folder
+headers = {Authorization: 'Bearer ' + jwt_token}
+body = {
+    "folderId": "678b1c8beb4459f085e863a8",
+    "destinationParentFolderId": null // folder copied or duplicate in root dir
+}
+```
+
+#### Rename folder - PUT API (private)
+
+```
+url = http://localhost:3000/api/v1/folders/rename-folder/:folderId
+headers = {Authorization: 'Bearer ' + jwt_token}
+body = {
+    "newFolderName": "new name",
+}
+```
+
+#### Favorite folder toggle - PUT API (private)
+
+```
+url = http://localhost:3000/api/v1/folders/favorite-folder/:folderId
+headers = {Authorization: 'Bearer ' + jwt_token}
+body = {
+    "isFavorite": true //{boolean}
+}
+```
+
+#### Folder privacy update PUT API (private)
+
+If user want to lock a folder or unlock a folder
+
+```
+url = http://localhost:3000/api/v1/folders/privacy-update
+headers = {Authorization: 'Bearer ' + jwt_token}
+body = {
+    "folderId": "678b1c8beb4459f085e863a8",
+    "privateStatus": true // {boolean} that means is api return private folders or public folders
+}
+```
+
+#### Get all folders - GET API (private)
+
+```
+url = http://localhost:3000/api/v1/folders/all?private={boolean}
+headers = {Authorization: 'Bearer ' + jwt_token}
+
+@return a folder list
+```
+
+#### Get all items in a folder - GET API (private)
+
+```
+url = http://localhost:3000/api/v1/folders/folder-content?folderId={id}
+headers = {Authorization: 'Bearer ' + jwt_token}
+
+@return a folder items list
+```
+
+#### Get Recent items - GET API (private)
+
+```
+url = http://localhost:3000/api/v1/folders/recent-items?private={boolean}
+headers = {Authorization: 'Bearer ' + jwt_token}
+
+@return a recent items list
+```
+
+#### Delete folder with all files inside the folder - DELETE API (private)
+
+```
+url = http://localhost:3000/api/v1/folders/delete-folder/:folderId
+headers = {Authorization: 'Bearer ' + jwt_token}
 ```
