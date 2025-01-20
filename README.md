@@ -273,3 +273,107 @@ headers = {Authorization: 'Bearer ' + jwt_token}
 url = http://localhost:3000/api/v1/folders/delete-folder/:folderId
 headers = {Authorization: 'Bearer ' + jwt_token}
 ```
+
+### File management API References
+
+#### File upload - POST API (private)
+
+```
+url = http://localhost:3000/api/v1/files/save-files
+headers = {Authorization: 'Bearer ' + jwt_token}
+formData = {
+    files: multiple file,
+    folderId: null // null or valid id
+}
+```
+
+#### File copy or duplicate - POST API (private)
+
+```
+url = http://localhost:3000/api/v1/files/copy-or-duplicate-file/:fileId
+headers = {Authorization: 'Bearer ' + jwt_token}
+body = {
+    "folderId": null // destination folder id or null if destination is root directory
+}
+```
+
+#### File rename - PUT API (private)
+
+```
+url = http://localhost:3000/api/v1/files/rename-file/:fileId
+headers = {Authorization: 'Bearer ' + jwt_token}
+body = {
+    "newFileName": "meeting-room"
+}
+```
+
+#### File favorite toggle - PUT API (private)
+
+```
+url = http://localhost:3000/api/v1/files/favorite-file/:fileId
+headers = {Authorization: 'Bearer ' + jwt_token}
+body = {
+    "isFavorite": true // boolean
+}
+```
+
+#### File privacy update - PUT API (private)
+
+```
+url = http://localhost:3000/api/v1/files/privacy-update
+headers = {Authorization: 'Bearer ' + jwt_token}
+body = {
+    "fileId": "678bc82c63139d9df3486662",
+    "privateStatus": true // boolean
+}
+```
+
+#### Get all note files - GET API (private)
+
+```
+url = http://localhost:3000/api/v1/files/notes?private={boolean}
+headers = {Authorization: 'Bearer ' + jwt_token}
+```
+
+#### Get all pdf files - GET API (private)
+
+```
+url = http://localhost:3000/api/v1/files/pdfs?private={boolean}
+headers = {Authorization: 'Bearer ' + jwt_token}
+```
+
+#### Get all images files - GET API (private)
+
+```
+url = http://localhost:3000/api/v1/files/images?private={boolean}
+headers = {Authorization: 'Bearer ' + jwt_token}
+```
+
+#### Get all favorite files - GET API (private)
+
+```
+url = http://localhost:3000/api/v1/files/favorite?private={boolean}
+headers = {Authorization: 'Bearer ' + jwt_token}
+```
+
+#### Get files by date - GET API (private)
+
+```
+url = http://localhost:3000/api/v1/files/items-by-date?date={date}&private={boolean}
+// example date=2015-01-19
+headers = {Authorization: 'Bearer ' + jwt_token}
+```
+
+#### File preview - GET API (private)
+
+```
+url = http://localhost:3000/api/v1/files/preview-file?fileId={gridfs_file_id}
+headers = {Authorization: 'Bearer ' + jwt_token}
+```
+
+### Delete file - DELETE API (private)
+
+```
+url = http://localhost:3000/api/v1/files/delete-file/:fileId
+headers = {Authorization: 'Bearer ' + jwt_token}
+```
