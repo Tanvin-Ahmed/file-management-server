@@ -67,7 +67,7 @@ yarn run dev
 
 #### Register user - POST API (public)
 
-```
+````
 url = http://localhost:3000/api/v1/user/register
 body = {
     username: 'your name',
@@ -76,53 +76,65 @@ body = {
 }
 
 // please use a valid email address so that you can get email back
-```
+```javascript
 
 #### Login user - POST API (public)
 
-```
+````
+
 url = http://localhost:3000/api/v1/user/login
 body = {
-    email: 'youremail@gmail.com',
-    password: 'your password'
+email: 'youremail@gmail.com',
+password: 'your password'
 }
+
 ```
 
 #### Update username - PUT API (private)
 
 ```
+
 url = http://localhost:3000/api/v1/user/update/:userId
 headers = {Authorization: 'Bearer ' + jwt_token}
 body = {
-    username: 'new username'
+username: 'new username'
 }
+
 ```
 
 #### Update profile image - PUT API (private)
 
 ```
+
 url = http://localhost:3000/api/v1/user/update-profile
 headers = {Authorization: 'Bearer ' + jwt_token}
 formData = {
-    file: image,
+file: image,
 }
+
 ```
 
 #### View Profile image - GET API (private)
 
 ```
+
 url = http://localhost:3000/api/v1/user/profile-preview?imageId={gridfs_image_id}
 headers = {Authorization: 'Bearer ' + jwt_token}
+
 ```
 
 #### Forgot Password - POST API (private)
 
 ```
+
 url = http://localhost:3000/api/v1/user/forgot-password
 headers = {Authorization: 'Bearer ' + jwt_token}
 body = {
-    email: 'youremail@gmail.com' // by which email you registered in your account
+email: 'youremail@gmail.com' // by which email you registered in your account
 }
 
 // it will send you an email with verification code so please use a valid email address
+
+```
+
 ```
