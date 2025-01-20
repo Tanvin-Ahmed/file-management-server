@@ -371,7 +371,7 @@ url = http://localhost:3000/api/v1/files/preview-file?fileId={gridfs_file_id}
 headers = {Authorization: 'Bearer ' + jwt_token}
 ```
 
-### Delete file - DELETE API (private)
+#### Delete file - DELETE API (private)
 
 ```
 url = http://localhost:3000/api/v1/files/delete-file/:fileId
