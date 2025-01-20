@@ -34,16 +34,25 @@ const deleteProfileIfExist = async (userId) => {
 const deleteUser = async (id) => await UserModel.findByIdAndDelete(id);
 
 const findSummery = async (userId) => {
-  // Calculate total folder size
-  const totalFolderSize = await FolderModel.aggregate([
+  // Calculate total folder size and count
+  const folderAggregation = await FolderModel.aggregate([
     { $match: { createdBy: new mongoose.Types.ObjectId(userId) } },
-    { $group: { _id: null, totalSize: { $sum: "$size" } } },
+    {
+      $group: {
+        _id: null,
+        totalSize: { $sum: "$size" },
+        totalFolders: { $sum: 1 },
+      },
+    },
   ]);
 
-  const folderSize = totalFolderSize[0]?.totalSize || 0;
+  const folderSummary = {
+    folderSize: folderAggregation[0]?.totalSize || 0,
+    totalFolders: folderAggregation[0]?.totalFolders || 0,
+  };
 
-  // calculate all type of file size
-  const fileAggregations = await FileModel.aggregate([
+  // Calculate total size and count for each file type
+  const fileAggregation = await FileModel.aggregate([
     { $match: { createdBy: new mongoose.Types.ObjectId(userId) } },
     {
       $group: {
@@ -57,9 +66,23 @@ const findSummery = async (userId) => {
             ],
           },
         },
+        imageFileCount: {
+          $sum: {
+            $cond: [
+              { $regexMatch: { input: "$fileType", regex: /^image\// } },
+              1,
+              0,
+            ],
+          },
+        },
         pdfFileSize: {
           $sum: {
             $cond: [{ $eq: ["$fileType", "application/pdf"] }, "$fileSize", 0],
+          },
+        },
+        pdfFileCount: {
+          $sum: {
+            $cond: [{ $eq: ["$fileType", "application/pdf"] }, 1, 0],
           },
         },
         noteFileSize: {
@@ -76,18 +99,36 @@ const findSummery = async (userId) => {
             ],
           },
         },
+        noteFileCount: {
+          $sum: {
+            $cond: [
+              {
+                $eq: [
+                  "$fileType",
+                  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                ],
+              },
+              1,
+              0,
+            ],
+          },
+        },
       },
     },
   ]);
 
-  const { _id, ...rest } = fileAggregations[0];
+  const { _id, ...rest } = fileAggregation[0];
+
   const fileSummary = rest || {
     imageFileSize: 0,
+    imageFileCount: 0,
     pdfFileSize: 0,
+    pdfFileCount: 0,
     noteFileSize: 0,
+    noteFileCount: 0,
   };
 
-  return { folderSize, ...fileSummary };
+  return { ...folderSummary, ...fileSummary };
 };
 
 module.exports = {

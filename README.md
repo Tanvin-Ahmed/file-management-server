@@ -157,12 +157,16 @@ headers = {Authorization: 'Bearer ' + jwt_token}
     "message": "Storage summary retrieved successfully.",
     "data": {
         "totalStorage": 16106127360, // bytes
-        "usedStorage": 1019600, // bytes
-        "availableStorage": 16105107760, // bytes
-        "folderSize": 1019600, // bytes
-        "imageFileSize": 1019600, // bytes
-        "pdfFileSize": 0, // bytes
-        "noteFileSize": 0 // bytes
+        "usedStorage": 1019600,
+        "availableStorage": 16105107760,
+        "folderSize": 1019600,
+        "totalFolders": 1,
+        "imageFileSize": 1019600,
+        "imageFileCount": 1,
+        "pdfFileSize": 0,
+        "pdfFileCount": 0,
+        "noteFileSize": 0,
+        "noteFileCount": 0
     }
 }
 ```
