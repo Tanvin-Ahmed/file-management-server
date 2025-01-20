@@ -26,8 +26,9 @@ router.put(
   uploadProfileMiddleware,
   uploadUserProfileImage
 );
-router.put("/update/:userId", isUser, userUpdate);
-router.delete("/delete/:userId", isUser, userDelete);
+
+router.put("/update", isUser, userUpdate);
+router.delete("/delete", isUser, userDelete);
 
 // password api routes
 router.post("/forgot-password", forgotPassword);

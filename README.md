@@ -67,7 +67,7 @@ yarn run dev
 
 #### Register user - POST API (public)
 
-````
+```
 url = http://localhost:3000/api/v1/user/register
 body = {
     username: 'your name',
@@ -76,65 +76,102 @@ body = {
 }
 
 // please use a valid email address so that you can get email back
-```javascript
+```
 
 #### Login user - POST API (public)
 
-````
-
+```
 url = http://localhost:3000/api/v1/user/login
 body = {
-email: 'youremail@gmail.com',
-password: 'your password'
+    email: 'youremail@gmail.com',
+    password: 'your password'
 }
-
 ```
 
 #### Update username - PUT API (private)
 
 ```
-
-url = http://localhost:3000/api/v1/user/update/:userId
+url = http://localhost:3000/api/v1/user/update
 headers = {Authorization: 'Bearer ' + jwt_token}
 body = {
-username: 'new username'
+    username: 'new username'
 }
-
 ```
 
 #### Update profile image - PUT API (private)
 
 ```
-
 url = http://localhost:3000/api/v1/user/update-profile
 headers = {Authorization: 'Bearer ' + jwt_token}
 formData = {
-file: image,
+    file: image,
 }
-
 ```
 
 #### View Profile image - GET API (private)
 
 ```
-
 url = http://localhost:3000/api/v1/user/profile-preview?imageId={gridfs_image_id}
 headers = {Authorization: 'Bearer ' + jwt_token}
-
 ```
 
-#### Forgot Password - POST API (private)
+#### Forgot Password - POST API (public)
 
 ```
-
 url = http://localhost:3000/api/v1/user/forgot-password
-headers = {Authorization: 'Bearer ' + jwt_token}
 body = {
-email: 'youremail@gmail.com' // by which email you registered in your account
+    email: 'youremail@gmail.com' // by which email you registered in your account
 }
 
 // it will send you an email with verification code so please use a valid email address
-
 ```
 
+#### Verification Code - POST API (public)
+
+```
+url = http://localhost:3000/api/v1/user/verify-code
+body = {
+    email: 'youremail@gmail.com' // by which email you registered in your account
+    code: 'your code that get you by email'
+}
+```
+
+#### Reset password - PUT API (public)
+
+```
+url = http://localhost:3000/api/v1/user/reset-password
+body = {
+    "email": "youremail@gmail.com",
+    "password": "new password",
+    "confirmPassword": "new confirm password",
+}
+```
+
+#### Get summary information - GET API (private)
+
+```
+url = http://localhost:3000/api/v1/user/summary
+headers = {Authorization: 'Bearer ' + jwt_token}
+
+@response like = {
+    "message": "Storage summary retrieved successfully.",
+    "data": {
+        "totalStorage": 16106127360, // bytes
+        "usedStorage": 1019600, // bytes
+        "availableStorage": 16105107760, // bytes
+        "folderSize": 1019600, // bytes
+        "imageFileSize": 1019600, // bytes
+        "pdfFileSize": 0, // bytes
+        "noteFileSize": 0 // bytes
+    }
+}
+```
+
+#### Delete user - DELETE API (private)
+
+```
+url = http://localhost:3000/api/v1/user/delete
+headers = {Authorization: 'Bearer ' + jwt_token}
+
+// it just delete the logged in user.
 ```

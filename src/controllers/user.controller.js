@@ -75,10 +75,10 @@ const login = async (req, res) => {
 };
 
 const userUpdate = async (req, res) => {
-  const { userId } = req.params; // User ID from route params
-  const { username } = req.body; // Data to update
-
   try {
+    const userId = req.user._id;
+    const { username } = req.body;
+
     // Check if user exists
     const user = await getUserById(userId);
     if (!user) {
@@ -118,9 +118,9 @@ const uploadUserProfileImage = async (req, res) => {
 };
 
 const userDelete = async (req, res) => {
-  const { userId } = req.params;
-
   try {
+    const userId = req.user._id;
+
     const user = await deleteUser(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
