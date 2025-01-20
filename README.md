@@ -377,3 +377,35 @@ headers = {Authorization: 'Bearer ' + jwt_token}
 url = http://localhost:3000/api/v1/files/delete-file/:fileId
 headers = {Authorization: 'Bearer ' + jwt_token}
 ```
+
+### Lock management API References
+
+#### Create Pin lock - POST (private)
+
+```
+url = http://localhost:3000/api/v1/pin/create
+headers = {Authorization: 'Bearer ' + jwt_token}
+body = {
+    "pin": "1234" // 4 digit number
+}
+```
+
+#### Unlock by Pin - POST (private)
+
+```
+url = http://localhost:3000/api/v1/pin
+headers = {Authorization: 'Bearer ' + jwt_token}
+body = {
+    "pin": "1234" // 4 digit number
+}
+```
+
+#### Forgot Pin - PUT (private)
+
+```
+url = http://localhost:3000/api/v1/pin/update
+headers = {Authorization: 'Bearer ' + jwt_token}
+body = {
+    "pin": "3435" // 4 digit number
+}
+```
