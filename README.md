@@ -167,6 +167,13 @@ headers = {Authorization: 'Bearer ' + jwt_token}
 }
 ```
 
+#### Logout - GET API (private)
+
+```
+url = http://localhost:3000/api/v1/user/logout
+headers = {Authorization: 'Bearer ' + jwt_token}
+```
+
 #### Delete user - DELETE API (private)
 
 ```

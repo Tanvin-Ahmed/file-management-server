@@ -33,6 +33,12 @@ const register = async (req, res) => {
     //   generate a new token
     const token = generateToken({ email, _id: newUser._id });
 
+    res.cookie("jwt_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days validation
+    });
+
     return res.status(201).json({
       message: "User registered successfully",
       token,
@@ -64,6 +70,12 @@ const login = async (req, res) => {
     // Generate a JWT token
     const token = generateToken({ _id: user._id, email });
 
+    res.cookie("jwt_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days validation
+    });
+
     return res
       .status(200)
       .json({ message: "Login successful", token, userId: user._id });
@@ -71,6 +83,24 @@ const login = async (req, res) => {
     return res
       .status(500)
       .json({ message: "Login failed", error: error.message });
+  }
+};
+
+const logout = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const user = await getUserById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.clearCookie("jwt_token");
+    return res.status(200).json({ message: "Logout successful" });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Logout failed", error: error.message });
   }
 };
 
@@ -306,4 +336,5 @@ module.exports = {
   getUserStorageSummary,
   uploadUserProfileImage,
   previewProfile,
+  logout,
 };
